@@ -1,5 +1,6 @@
 #include "MainFrame.hpp"
 #include "ResinProfileDialog.hpp"
+#include "ResinBuildPlate.hpp"
 #include "ResinProfileStorage.hpp"
 #include <wx/stdpaths.h>
 #include <filesystem>
@@ -686,13 +687,22 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         resin_settings_button, 0, wxALL, FromDIP(20)
     );
 
+    // UNIVERSAL_SLICER_RESIN_BUILD_PLATE
+   auto* resin_build_plate = new ResinBuildPlate(
+       m_resin_panel, m_resin_profile
+   );
+   resin_sizer->Add(
+       resin_build_plate, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
+       FromDIP(20)
+   );
     resin_settings_button->Bind(
         wxEVT_BUTTON,
-        [this](wxCommandEvent&) {
+        [this, resin_build_plate](wxCommandEvent&) {
             ResinProfileDialog dialog(this, m_resin_profile);
 
             if (dialog.ShowModal() == wxID_OK) {
                 m_resin_profile = dialog.profile();
+                resin_build_plate->set_profile(m_resin_profile);
 
                 // Universal-Slicer: persist the active resin profile.
                 try {
@@ -710,7 +720,7 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
             }
         }
     );
-    m_resin_panel->SetSizer(resin_sizer);
+   m_resin_panel->SetSizer(resin_sizer);
     m_resin_panel->Hide();
 
     m_workspace_sizer->Add(m_resin_panel, 1, wxEXPAND);
