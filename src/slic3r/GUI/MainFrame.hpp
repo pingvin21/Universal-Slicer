@@ -1,3 +1,4 @@
+#include "ResinPrinterProfile.hpp"
 #ifndef slic3r_MainFrame_hpp_
 #define slic3r_MainFrame_hpp_
 
@@ -208,6 +209,7 @@ class MainFrame : public DPIFrame
 
     // Universal-Slicer: workspace containers
     wxPanel*    m_resin_panel{ nullptr };
+    ResinPrinterProfile m_resin_profile;
     wxSizer*    m_workspace_sizer{ nullptr };
 
     wxString    m_last_selected_tab;

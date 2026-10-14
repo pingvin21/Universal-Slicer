@@ -366,6 +366,7 @@ set(SLIC3R_GUI_SOURCES
     GUI/LibVGCode/LibVGCodeWrapper.cpp
     GUI/LinuxDisplayBackend.cpp
     GUI/LinuxDisplayBackend.hpp
+    GUI/ResinProfileDialog.cpp
     GUI/MainFrame.cpp
     GUI/MainFrame.hpp
     GUI/MarkdownTip.cpp

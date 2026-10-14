@@ -1,4 +1,8 @@
 #include "MainFrame.hpp"
+#include "ResinProfileDialog.hpp"
+#include "ResinProfileStorage.hpp"
+#include <wx/stdpaths.h>
+#include <filesystem>
 
 #include <wx/event.h>
 #include "slic3r/GUI/Event.hpp"
@@ -158,6 +162,8 @@ using json = nlohmann::json;
 
 namespace Slic3r {
 namespace GUI {
+
+static std::filesystem::path universal_resin_profile_path();
 
 wxDEFINE_EVENT(EVT_SELECT_TAB, wxCommandEvent);
 wxDEFINE_EVENT(EVT_HTTP_ERROR, wxCommandEvent);
@@ -414,6 +420,19 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     }
 #endif
 
+    // Universal-Slicer: restore the active resin profile.
+    try {
+        const auto profile_path = universal_resin_profile_path();
+        if (std::filesystem::exists(profile_path))
+            m_resin_profile = ResinProfileStorage::load(profile_path);
+    } catch (const std::exception& e) {
+        wxMessageBox(
+            wxString::FromUTF8(e.what()),
+            "Resin Profile Load Error",
+            wxOK | wxICON_WARNING,
+            this
+        );
+    }
     if (!wxGetApp().app_config->has("user_mode")) {
         wxGetApp().app_config->set("user_mode", "simple");
         wxGetApp().app_config->set_bool("developer_mode", false);
@@ -624,6 +643,8 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
 #endif // __WINDOWS__
 
 
+
+
     // UNIVERSAL_SLICER_WORKSPACES
     m_workspace_sizer = new wxBoxSizer(wxVERTICAL);
 
@@ -656,6 +677,39 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
     resin_sizer->Add(resin_title, 0, wxALL, FromDIP(20));
     resin_sizer->Add(resin_description, 0, wxLEFT, FromDIP(20));
 
+    // UNIVERSAL_SLICER_RESIN_SETTINGS
+    auto* resin_settings_button = new wxButton(
+        m_resin_panel, wxID_ANY, "Printer Settings"
+    );
+
+    resin_sizer->Add(
+        resin_settings_button, 0, wxALL, FromDIP(20)
+    );
+
+    resin_settings_button->Bind(
+        wxEVT_BUTTON,
+        [this](wxCommandEvent&) {
+            ResinProfileDialog dialog(this, m_resin_profile);
+
+            if (dialog.ShowModal() == wxID_OK) {
+                m_resin_profile = dialog.profile();
+
+                // Universal-Slicer: persist the active resin profile.
+                try {
+                    const auto profile_path = universal_resin_profile_path();
+                    std::filesystem::create_directories(profile_path.parent_path());
+                    ResinProfileStorage::save(m_resin_profile, profile_path);
+                } catch (const std::exception& e) {
+                    wxMessageBox(
+                        wxString::FromUTF8(e.what()),
+                        "Resin Profile Save Error",
+                        wxOK | wxICON_ERROR,
+                        this
+                    );
+                }
+            }
+        }
+    );
     m_resin_panel->SetSizer(resin_sizer);
     m_resin_panel->Hide();
 
@@ -1129,6 +1183,10 @@ void  MainFrame::show_log_window()
 }
 
 //BBS GUI refactor: remove unused layout new/dlg
+
+
+
+
 void MainFrame::set_print_mode(bool resin)
 {
     if (!m_workspace_sizer || !m_resin_panel)
@@ -1143,6 +1201,19 @@ void MainFrame::set_print_mode(bool resin)
     Refresh();
 }
 
+static std::filesystem::path universal_resin_profile_path()
+{
+    auto appdata = wxStandardPaths::Get().GetUserConfigDir();
+#ifdef _WIN32
+    const char* roaming = wxGetenv("APPDATA");
+    if (roaming != nullptr && roaming[0] != '\0')
+        appdata = wxString::FromUTF8(roaming);
+#endif
+    return std::filesystem::path(appdata.ToStdWstring())
+        / L"Universal-Slicer"
+        / L"resin"
+        / L"active_profile.json";
+}
 // UNIVERSAL_SLICER_MODE_IMPLEMENTATION
 void MainFrame::update_layout()
 {
