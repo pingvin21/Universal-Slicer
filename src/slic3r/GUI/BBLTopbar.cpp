@@ -338,6 +338,44 @@ void BBLTopbar::Init(wxFrame* parent)
     m_title_ctrl = new CenteredTitle(this);
     m_title_ctrl->SetFont(Label::Body_12);
     wxAuiToolBarItem* title_item = this->AddControl(m_title_ctrl, "");
+    // UNIVERSAL_SLICER_MODE_SWITCH
+    auto* fdm_button = new wxButton(
+        this, wxID_ANY, "FDM",
+        wxDefaultPosition, FromDIP(wxSize(65, 28))
+    );
+
+    auto* resin_button = new wxButton(
+        this, wxID_ANY, "Resin",
+        wxDefaultPosition, FromDIP(wxSize(75, 28))
+    );
+
+    const wxColour active_color(0, 150, 136);
+    const wxColour inactive_color(55, 65, 68);
+    const wxColour text_color(255, 255, 255);
+
+    fdm_button->SetBackgroundColour(active_color);
+    resin_button->SetBackgroundColour(inactive_color);
+
+    fdm_button->SetForegroundColour(text_color);
+    resin_button->SetForegroundColour(text_color);
+
+    fdm_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent&) {
+        fdm_button->SetBackgroundColour(active_color);
+        resin_button->SetBackgroundColour(inactive_color);
+        fdm_button->Refresh();
+        resin_button->Refresh();
+    });
+
+    resin_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent&) {
+        resin_button->SetBackgroundColour(active_color);
+        fdm_button->SetBackgroundColour(inactive_color);
+        resin_button->Refresh();
+        fdm_button->Refresh();
+    });
+
+    this->AddControl(fdm_button, "FDM");
+    this->AddControl(resin_button, "Resin");
+
     title_item->SetProportion(1); 
 
     this->AddSpacer(FromDIP(25));
