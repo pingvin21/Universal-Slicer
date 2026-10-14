@@ -624,7 +624,44 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
 #endif // __WINDOWS__
 
 
-    sizer->Add(m_main_sizer, 1, wxEXPAND);
+    // UNIVERSAL_SLICER_WORKSPACES
+    m_workspace_sizer = new wxBoxSizer(wxVERTICAL);
+
+    m_workspace_sizer->Add(m_main_sizer, 1, wxEXPAND);
+
+    m_resin_panel = new wxPanel(this, wxID_ANY);
+    m_resin_panel->SetBackgroundColour(wxColour(38, 46, 48));
+
+    auto* resin_sizer = new wxBoxSizer(wxVERTICAL);
+
+    auto* resin_title = new wxStaticText(
+        m_resin_panel, wxID_ANY, "Resin Workspace"
+    );
+
+    resin_title->SetForegroundColour(wxColour(255, 255, 255));
+
+    wxFont title_font = resin_title->GetFont();
+    title_font.SetPointSize(18);
+    title_font.MakeBold();
+    resin_title->SetFont(title_font);
+
+    auto* resin_description = new wxStaticText(
+        m_resin_panel,
+        wxID_ANY,
+        "Universal-Slicer Resin mode - workspace initialized"
+    );
+
+    resin_description->SetForegroundColour(wxColour(180, 195, 195));
+
+    resin_sizer->Add(resin_title, 0, wxALL, FromDIP(20));
+    resin_sizer->Add(resin_description, 0, wxLEFT, FromDIP(20));
+
+    m_resin_panel->SetSizer(resin_sizer);
+    m_resin_panel->Hide();
+
+    m_workspace_sizer->Add(m_resin_panel, 1, wxEXPAND);
+
+    sizer->Add(m_workspace_sizer, 1, wxEXPAND);
     SetSizerAndFit(sizer);
     // initialize layout from config
     update_layout();
@@ -1092,6 +1129,21 @@ void  MainFrame::show_log_window()
 }
 
 //BBS GUI refactor: remove unused layout new/dlg
+void MainFrame::set_print_mode(bool resin)
+{
+    if (!m_workspace_sizer || !m_resin_panel)
+        return;
+
+    m_workspace_sizer->Show(m_main_sizer, !resin, true);
+    m_workspace_sizer->Show(m_resin_panel, resin, true);
+
+    m_resin_panel->Show(resin);
+
+    Layout();
+    Refresh();
+}
+
+// UNIVERSAL_SLICER_MODE_IMPLEMENTATION
 void MainFrame::update_layout()
 {
     auto restore_to_creation = [this]() {

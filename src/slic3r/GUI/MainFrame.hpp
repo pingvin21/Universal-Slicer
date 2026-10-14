@@ -206,6 +206,10 @@ class MainFrame : public DPIFrame
     wxMenuItem* m_menu_item_reslice_now { nullptr };
     wxSizer*    m_main_sizer{ nullptr };
 
+    // Universal-Slicer: workspace containers
+    wxPanel*    m_resin_panel{ nullptr };
+    wxSizer*    m_workspace_sizer{ nullptr };
+
     wxString    m_last_selected_tab;
 
     std::string     get_base_name(const wxString &full_name, const char *extension = nullptr) const;
@@ -356,6 +360,9 @@ public:
     };
 
     void update_layout();
+
+    // Universal-Slicer mode switching
+    void set_print_mode(bool resin);
 
 	// Called when closing the application and when switching the application language.
 	void 		shutdown();

@@ -1,4 +1,5 @@
 #include "BBLTopbar.hpp"
+#include "PrintModeManager.hpp"
 #include "wx/artprov.h"
 #include "wx/aui/framemanager.h"
 #include "wx/display.h"
@@ -360,6 +361,8 @@ void BBLTopbar::Init(wxFrame* parent)
     resin_button->SetForegroundColour(text_color);
 
     fdm_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent&) {
+        PrintModeManager::instance().set_mode(PrintMode::FDM);
+        static_cast<MainFrame*>(m_frame)->set_print_mode(false);
         fdm_button->SetBackgroundColour(active_color);
         resin_button->SetBackgroundColour(inactive_color);
         fdm_button->Refresh();
@@ -367,6 +370,8 @@ void BBLTopbar::Init(wxFrame* parent)
     });
 
     resin_button->Bind(wxEVT_BUTTON, [=](wxCommandEvent&) {
+        PrintModeManager::instance().set_mode(PrintMode::Resin);
+        static_cast<MainFrame*>(m_frame)->set_print_mode(true);
         resin_button->SetBackgroundColour(active_color);
         fdm_button->SetBackgroundColour(inactive_color);
         resin_button->Refresh();
